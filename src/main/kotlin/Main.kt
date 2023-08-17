@@ -23,10 +23,20 @@ fun App() {
             Button(onClick = {
                 transaction(DbSettings.db) {
                     addLogger(StdOutSqlLogger)
-                    val newVal = (Products innerJoin Types innerJoin Remaining).slice(Types.description, Products.description, Remaining.starting).selectAll().map {
-                        listOf(it[Types.description].toString(), it[Products.description].toString(), it.getOrNull(Remaining.starting)?.toString() ?: "")
+                    val newVal = (Products innerJoin Types innerJoin OrderItems innerJoin OrderRows).slice(Types.description, Products.description, OrderRows.quantity, Products.id)
+                        .selectAll()
+                        .groupBy { it[Products.id] }
+                        .map { entry ->
+                            val mapValue = entry.value
+                            mapValue
+                                .map { Triple(it[Types.description], it[Products.description], it.getOrNull(OrderRows.quantity)?: 0) }
+                                .reduce {
+                                    acc,
+                                    trip ->
+                                    Triple(acc.first, acc.second, acc.third + trip.third)
+                                }
+                        }.map { triple -> listOf(triple.first, triple.second, triple.third).map { it.toString() } }
 
-                    }.toList()
                     results = newVal
                 }
             }) {
