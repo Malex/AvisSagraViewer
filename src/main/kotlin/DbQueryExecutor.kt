@@ -1,18 +1,18 @@
+import kotlinx.datetime.LocalDate
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.between
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
-import schema.OrderItems
-import schema.OrderRows
-import schema.Products
-import schema.Types
+import schema.*
 
 class DbQueryExecutor {
 
-    private val joinedTables = (Products innerJoin Types innerJoin OrderItems innerJoin OrderRows).slice(
+    private val joinedTables = (Products innerJoin Types innerJoin OrderItems innerJoin OrderRows innerJoin Orders).slice(
         Types.description,
         Products.description,
         OrderRows.quantity,
-        Products.id
+        Products.id,
+        Orders.night
     )
 
     private fun queryAggregator(input: Query): List<List<String>> {
@@ -61,6 +61,19 @@ class DbQueryExecutor {
 
     fun getAllProducts(): List<String> {
         return basicQueryExec(Products.slice(Products.description), { it.selectAll() }, { this.map { it[Products.description] } } )
+    }
 
+    fun getSpecificProducts(products: List<Int>, timeFilter: ClosedRange<LocalDate>): List<List<String>> {
+        return queryWithAggregator {
+            it.select(Products.id.inList(products).and(Orders.night.between(timeFilter.start, timeFilter.endInclusive)))
+        }
+    }
+
+    fun getSpecificProductsbyName(products: List<String>, timeFilter: ClosedRange<LocalDate>): List<List<String>> {
+        return getSpecificProducts(basicQueryExec(Products.slice(Products.id), { it.select(Products.description.inList(products)) }, {this.map { it[Products.id] }}), timeFilter)
+    }
+
+    fun getAllDate(): List<LocalDate> {
+        return basicQueryExec(Orders.slice(Orders.night), { it.selectAll().withDistinct() }, { this.map { it[Orders.night] }})
     }
 }

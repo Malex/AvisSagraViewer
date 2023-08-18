@@ -29,7 +29,6 @@ fun App() {
                     modifier = Modifier.padding(10.dp)) {
                     Text("Aggiorna")
                 }
-
                 Button(
                     onClick = {
                         filters.removeAll { true }
