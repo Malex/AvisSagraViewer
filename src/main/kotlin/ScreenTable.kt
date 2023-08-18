@@ -15,7 +15,7 @@ import kotlin.math.max
 infix fun Int.fdiv(i: Int): Float = this / i.toFloat()
 
 @Composable
-fun TableScreen(columnText: List<String>, values: List<List<String?>>, optList: List<String>,outVar: MutableList<String>) {
+fun TableScreen(columnText: List<String>, values: List<List<String?>>, optList: List<String>, outVar: MutableList<String>) {
     val expanded = mutableStateOf(false)
 
     ProductsDropDownMenu(optList, outVar, expanded)

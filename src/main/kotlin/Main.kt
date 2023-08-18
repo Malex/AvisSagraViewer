@@ -17,8 +17,7 @@ fun App() {
     val text = "Aggiorna"
 
     var results by remember { mutableStateOf(listOf<List<String>>()) }
-    val filters: SnapshotStateList<String> = mutableStateListOf()
-
+    val filters = mutableStateListOf<String>()
     val queryExecutor = DbQueryExecutor()
     val productOptions = queryExecutor.getAllProducts()
 
