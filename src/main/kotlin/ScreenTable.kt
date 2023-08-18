@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -15,7 +15,11 @@ import kotlin.math.max
 infix fun Int.fdiv(i: Int): Float = this / i.toFloat()
 
 @Composable
-fun TableScreen(columnText: List<String>, values: List<List<String?>>) {
+fun TableScreen(columnText: List<String>, values: List<List<String?>>, optList: List<String>,outVar: MutableList<String>) {
+    val expanded = mutableStateOf(false)
+
+    ProductsDropDownMenu(optList, outVar, expanded)
+
     // Each cell of a column must have the same weight.
     val totalWeightColumn = columnText.map { it.length }.sum()
     val maxValuesRows = values.map { stringList -> stringList.map { it?.length ?: 0 } }
@@ -37,8 +41,11 @@ fun TableScreen(columnText: List<String>, values: List<List<String?>>) {
         // Here is the header
         item {
             Row (Modifier.background(Color.Gray)) {
-                columnText.forEachIndexed { index, it ->
-                    TableCell(text = it, weight = weightList[index])
+                columnText.forEachIndexed { index, col ->
+                    TableCell(text = col, weight = weightList[index],
+                        onClick = {
+                            expanded.value = true
+                        })
                 }
             }
         }

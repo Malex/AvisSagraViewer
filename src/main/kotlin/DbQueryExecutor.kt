@@ -1,4 +1,5 @@
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
 import schema.OrderItems
 import schema.OrderRows
@@ -33,16 +34,33 @@ class DbQueryExecutor {
             }.map { triple -> listOf(triple.first, triple.second, triple.third).map { it.toString() } }
     }
 
-    private fun queryUser(fn: (FieldSet) -> Query): List<List<String>> {
+    private fun queryWithAggregator(fn: (FieldSet) -> Query): List<List<String>> {
+        return basicQueryExec(joinedTables, fn, ::queryAggregator)
+    }
+
+    private fun <T> basicQueryExec(fieldSet: FieldSet, fn: (FieldSet) -> Query, then: Query.() -> T): T {
         return transaction(DbSettings.db) {
             addLogger(StdOutSqlLogger)
-            joinedTables.let(fn).let {
-                queryAggregator(it)
-            }
+            fieldSet.let(fn).let(then)
         }
     }
 
     fun getBasic(): List<List<String>> {
-        return queryUser { it.selectAll() }
+        return queryWithAggregator { it.selectAll() }
+    }
+
+    fun getSpecificProducts(products: List<Int>): List<List<String>> {
+        return queryWithAggregator {
+            it.select(Products.id.inList(products))
+        }
+    }
+
+    fun getSpecificProductsbyName(products: List<String>): List<List<String>> {
+        return getSpecificProducts(basicQueryExec(Products.slice(Products.id), { it.select(Products.description.inList(products)) }, {this.map { it[Products.id] }}))
+    }
+
+    fun getAllProducts(): List<String> {
+        return basicQueryExec(Products.slice(Products.description), { it.selectAll() }, { this.map { it[Products.description] } } )
+
     }
 }
