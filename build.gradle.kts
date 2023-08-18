@@ -5,6 +5,16 @@ plugins {
     id("org.jetbrains.compose")
 }
 
+kotlin {
+    jvmToolchain(18)
+
+    sourceSets {
+        named("main") {
+            resources.srcDirs("src/main/resources")
+        }
+    }
+}
+
 group = "it.avis.mottadilivenza"
 version = "1.0-SNAPSHOT"
 
@@ -14,6 +24,7 @@ repositories {
     maven("https://repo1.maven.org/maven2/")
     google()
 }
+
 
 val exposedVersion: String by project
 
@@ -45,6 +56,8 @@ compose.desktop {
             targetFormats(TargetFormat.Exe)
             packageName = "AvisSagraViewer"
             packageVersion = "1.0.0"
+            includeAllModules = true
+            //appResourcesRootDir.set(project.layout.projectDirectory.dir("src/main/resources"))
         }
     }
 }

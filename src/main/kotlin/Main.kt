@@ -18,27 +18,12 @@ fun App() {
 
     var results by remember { mutableStateOf(listOf<List<String>>()) }
 
+    val queryExecutor = DbQueryExecutor()
+
     MaterialTheme {
         Column {
             Button(onClick = {
-                transaction(DbSettings.db) {
-                    addLogger(StdOutSqlLogger)
-                    val newVal = (Products innerJoin Types innerJoin OrderItems innerJoin OrderRows).slice(Types.description, Products.description, OrderRows.quantity, Products.id)
-                        .selectAll()
-                        .groupBy { it[Products.id] }
-                        .map { entry ->
-                            val mapValue = entry.value
-                            mapValue
-                                .map { Triple(it[Types.description], it[Products.description], it.getOrNull(OrderRows.quantity)?: 0) }
-                                .reduce {
-                                    acc,
-                                    trip ->
-                                    Triple(acc.first, acc.second, acc.third + trip.third)
-                                }
-                        }.map { triple -> listOf(triple.first, triple.second, triple.third).map { it.toString() } }
-
-                    results = newVal
-                }
+                results = queryExecutor.getBasic()
             }) {
                 Text(text)
             }
