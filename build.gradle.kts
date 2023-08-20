@@ -45,6 +45,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-money:$exposedVersion")
 
     implementation("org.xerial:sqlite-jdbc:3.30.1")
+    implementation("ca.gosyer:compose-material-dialogs-datetime:0.9.3")
     //implementation("androidx.compose.runtime:runtime-livedata:1.4.3")
 }
 
