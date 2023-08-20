@@ -70,7 +70,7 @@ class DbQueryExecutor {
     }
 
     fun getSpecificProductsbyName(products: List<String>, timeFilter: ClosedRange<LocalDate>): List<List<String>> {
-        return getSpecificProducts(basicQueryExec(Products.slice(Products.id), { it.select(Products.description.inList(products)) }, {this.map { it[Products.id] }}), timeFilter)
+        return getSpecificProducts(basicQueryExec(Products.slice(Products.id), { if (products.isNotEmpty()) it.select(Products.description.inList(products)) else it.selectAll() }, {this.map { it[Products.id] }}), timeFilter)
     }
 
     fun getAllDate(): List<LocalDate> {

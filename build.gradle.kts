@@ -58,7 +58,7 @@ compose.desktop {
             packageName = "AvisSagraViewer"
             packageVersion = "1.0.0"
             includeAllModules = true
-            //appResourcesRootDir.set(project.layout.projectDirectory.dir("src/main/resources"))
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
         }
     }
 }

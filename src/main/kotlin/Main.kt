@@ -13,6 +13,7 @@ import com.vanpra.composematerialdialogs.MaterialDialogProperties
 import com.vanpra.composematerialdialogs.MaterialDialogState
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toKotlinLocalDate
 import java.util.*
@@ -22,7 +23,6 @@ val TODAY = java.time.LocalDate.now().toKotlinLocalDate()
 @Composable
 @Preview
 fun App() {
-
     var results by remember { mutableStateOf(listOf<List<String>>()) }
     val filters = mutableStateListOf<String>()
     val queryExecutor = DbQueryExecutor()
@@ -36,12 +36,29 @@ fun App() {
     createDatePicker(dialogStateFrom, dateFrom)
     createDatePicker(dialogStateTo, dateTo)
 
+    val reloader = fun() {
+        results = if (isEmptyFilters(
+                filters,
+                dateFrom.value,
+                dateTo.value
+            )
+        ) queryExecutor.getBasic() else queryExecutor.getSpecificProductsbyName(
+            filters,
+            (dateFrom.value ?: LocalDate.fromEpochDays(1))..(dateTo.value ?: TODAY)
+        )
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            delay(PropertiesHolder.get("avis.sagra.reload.auto")?.toLongOrNull() ?: Long.MAX_VALUE)
+            reloader.invoke()
+        }
+    }
+
     MaterialTheme {
         Column {
             Row {
-                Button(onClick = {
-                    results = if (isEmptyFilters(filters, dateFrom.value, dateTo.value)) queryExecutor.getBasic() else queryExecutor.getSpecificProductsbyName(filters, (dateFrom.value ?: LocalDate.fromEpochDays(1))..(dateTo.value ?: TODAY))
-                }, colors = ButtonDefaults.buttonColors(Color.Gray),
+                Button(onClick = reloader, colors = ButtonDefaults.buttonColors(Color.Gray),
                     modifier = Modifier.padding(10.dp)) {
                     Text("Aggiorna")
                 }
